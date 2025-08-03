@@ -1,4 +1,4 @@
-import { Buffer } from 'node:buffer';
+//import { Buffer } from 'node:buffer';
 const https = require('node:https');
 
 class piUtils {
@@ -107,92 +107,43 @@ class piUtils {
     eventframesBatchSearch(){
         console.error('eventframesGet method not implemented');
     }
+
+    createJsonPathSearch(depth, searchURL) {
+        let jsonPath = {};
+        let responsepath = '.Content.Items[*]';
+
+        if (depth < 1 | depth > 5 | typeof depth !== 'number') {
+            throw new Error('Depth must be a number between 1 and 5');
+        }
+
+        for (let i = 0; i < depth; i++) {
+            jsonPath[`level${i}`] = {};
+            jsonPath[`level${i}`].Method = 'GET';
+            if (i === 0) {
+                //top level 
+                jsonPath[`level${i}`].Resource = searchURL;
+            } else {
+                let parentIds = [];
+                for (let j = i - 1; j >= 0; j--) {
+                    parentIds.push(`level${j}`);
+                }
+                jsonPath[`level${i}`].RequestTemplate = {};
+                jsonPath[`level${i}`].ParentIds = parentIds;
+                let traversePath = ''
+                for (let k = 0; k < parentIds.length; k++) {
+                    traversePath = traversePath + responsepath;
+                }
+                if (i === depth - 1) {
+                   //final depth
+                   jsonPath[`level${i}`].RequestTemplate.Resource = '$.' + `level${i - 1}`+ traversePath + '.Links.EventFrames';
+                } else {
+                    jsonPath[`level${i}`].RequestTemplate.Resource = 'https://' + this.serverName + this.domain + '/piwebapi/eventframes/{0}/eventframes';
+                    jsonPath[`level${i}`].Parameters = ['$.' + `level${i - 1}` + traversePath + '.WebId'];
+                }
+            }
+        }
+    }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+let piUtilsInstance = new piUtils('localhost', '');
+piUtilsInstance.createJsonPathSearch(3, 'piwebapi/test');
