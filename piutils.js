@@ -131,9 +131,12 @@ class piUtils {
                 jsonPath[`level${i}`].ParentIds = parentIds;
                 let traversePath = ''
                 for (let k = 0; k < parentIds.length; k++) {
+                    if (k>=2){
+                        break;
+                    }
                     traversePath = traversePath + responsepath;
                 }
-                if (i === depth - 1) {
+                if ((i === (depth - 1))&& i>= 2) {
                    //final depth
                    jsonPath[`level${i}`].RequestTemplate.Resource = '$.' + `level${i - 1}`+ traversePath + '.Links.EventFrames';
                 } else {
@@ -142,6 +145,7 @@ class piUtils {
                 }
             }
         }
+        return jsonPath
     }
 }
 
